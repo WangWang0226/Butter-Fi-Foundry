@@ -38,7 +38,7 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @param amount Amount of tokens to deposit.
      * @param user User address to credit the deposit.
      */
-    function deposit(uint256 amount, address user, uint256 duration) external nonReentrant onlyAggregator {
+    function deposit(uint256 amount, address user) external nonReentrant onlyAggregator {
         require(!emergencyShutdown, "Adapter: Emergency shutdown");
         
         uint256 fee = (amount * PLATFORM_FEE) / PLATFORM_FEE_BASE;

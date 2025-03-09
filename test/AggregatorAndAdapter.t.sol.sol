@@ -71,7 +71,6 @@ contract AggregatorAdapterTest is Test {
 
     function testInvestInStrategy() public {
         uint256 amount = 100e18;
-        uint256 duration = 100;
 
         // user1 批准 aggregator 使用 WMOD
         vm.prank(user1);
@@ -84,7 +83,7 @@ contract AggregatorAdapterTest is Test {
         vm.expectEmit(true, true, true, true);
         emit Deposited(user1, stakeAmount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, duration);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         assertEq(simpleStake.stakedBalance(user1), stakeAmount); // 扣除 1% 費用
         assertEq(simpleStake.totalStaked(), stakeAmount);
@@ -100,13 +99,13 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         // 提款
         vm.expectEmit(true, true, true, true);
         emit Withdrawn(user1, stakeAmount);
         vm.prank(user1);
-        aggregator.withdrawFromStrategy(STRATEGY_ID, stakeAmount);
+        aggregator.withdrawFromStrategy(user1, STRATEGY_ID, stakeAmount);
 
         assertEq(simpleStake.stakedBalance(user1), 0);
         assertEq(simpleStake.totalStaked(), 0);
@@ -121,7 +120,7 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         // 前進時間以累積獎勵
         vm.warp(block.timestamp + 10); // 10 秒，獎勵約為 10 sWMOD
@@ -141,7 +140,7 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         // 設置緊急關閉
         vm.prank(owner); // 僅 owner 可調用
@@ -153,7 +152,7 @@ contract AggregatorAdapterTest is Test {
         wmod.approve(address(aggregator), amount);
         vm.expectRevert("Aggregator: Target Strategy is Emergency shutdown");
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
     }
 
     function testCollectPlatformFees() public {
@@ -164,7 +163,7 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         assertEq(adapter.platformFeesCollected(), fee);
 
@@ -186,7 +185,7 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         uint256 balance = aggregator.getCurrentBalance(STRATEGY_ID, user1);
         assertEq(balance, amount - (amount * 1 / 100)); // 初始質押金額
@@ -204,7 +203,7 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount);
 
         // 前進時間
         vm.warp(block.timestamp + 5); // 5 秒，獎勵 = 5 * 1e18
@@ -220,13 +219,13 @@ contract AggregatorAdapterTest is Test {
         vm.prank(user1);
         wmod.approve(address(aggregator), amount1);
         vm.prank(user1);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount1, 100);
+        aggregator.investInStrategy(user1, STRATEGY_ID, address(wmod), amount1);
 
         // user2 投資
         vm.prank(user2);
         wmod.approve(address(aggregator), amount2);
         vm.prank(user2);
-        aggregator.investInStrategy(STRATEGY_ID, address(wmod), amount2, 100);
+        aggregator.investInStrategy(user2, STRATEGY_ID, address(wmod), amount2);
 
         // 前進時間
         vm.warp(block.timestamp + 10); // 10 秒，總質押 300e18 WMOD

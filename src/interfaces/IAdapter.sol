@@ -58,8 +58,7 @@ interface IAdapter {
     /// @notice Deposit tokens into the protocol
     /// @param amount Amount of tokens to deposit
     /// @param user Address to credit the deposit
-    /// @param duration Staking duration (if applicable)
-    function deposit(uint256 amount, address user, uint256 duration) external;
+    function deposit(uint256 amount, address user) external;
 
     /// @notice Withdraw staked tokens
     /// @param amount Amount of tokens to withdraw

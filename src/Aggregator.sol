@@ -19,7 +19,7 @@ contract Aggregator {
         owner = _owner;
     }
 
-    function investInStrategy(uint256 strategyId, address token, uint256 amount, uint duration) external {
+    function investInStrategy(address user, uint256 strategyId, address token, uint256 amount) external {
         require(amount > 0, "Aggregator: Amount must be greater than 0");
         require(IERC20(token).balanceOf(msg.sender) >= amount, "Aggregator: Insufficient sender balance");
 
@@ -34,13 +34,13 @@ contract Aggregator {
             IERC20(token).transferFrom(msg.sender, adapter, amount),
             "Aggregator: Transfer failed"
         );
-        IAdapter(adapter).deposit(amount, msg.sender, duration);
+        IAdapter(adapter).deposit(amount, user);
     }
 
-    function withdrawFromStrategy(uint256 strategyId, uint256 amount) external {
+    function withdrawFromStrategy(address user, uint256 strategyId, uint256 amount) external {
         address adapter = strategies[strategyId];
         require(adapter != address(0), "Aggregator: Strategy not found");
-        IAdapter(adapter).withdraw(amount, msg.sender);
+        IAdapter(adapter).withdraw(amount, user);
     }
 
     function addStrategy(uint256 strategyId, address adapter) external {
