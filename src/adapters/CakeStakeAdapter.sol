@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./interfaces/IERC20.sol";
-import "./util/ReentrancyGuard.sol";
-import "./protocols/SimpleStake.sol";
-import "forge-std/console.sol";  
+import "../interfaces/IERC20.sol";
+import "../util/ReentrancyGuard.sol";
+import "../protocols/CakeStake.sol";
 
-
-contract SimpleStakeAdapter is ReentrancyGuard {
+contract CakeStakeAdapter is ReentrancyGuard {
     IERC20 public immutable stakeToken;
     IERC20 public immutable rewardToken;
-    SimpleStake public immutable simpleStake;
+    CakeStake public immutable cakeStake;
     address public immutable aggregator;
 
     bool public emergencyShutdown;
@@ -23,10 +21,10 @@ contract SimpleStakeAdapter is ReentrancyGuard {
     event Withdrawn(address indexed user, uint256 amount);
     event FeesCollected(uint256 amount);
 
-    constructor(address _simpleStake, address _aggregator) {
-        simpleStake = SimpleStake(_simpleStake);
-        stakeToken = IERC20(simpleStake.stakingToken());
-        rewardToken = IERC20(simpleStake.rewardToken());
+    constructor(address _cakeStake, address _aggregator) {
+        cakeStake = CakeStake(_cakeStake);
+        stakeToken = IERC20(cakeStake.stakingToken());
+        rewardToken = IERC20(cakeStake.rewardToken());
         aggregator = _aggregator;
     }
 
@@ -36,7 +34,7 @@ contract SimpleStakeAdapter is ReentrancyGuard {
     }
 
     /**
-     * @notice Deposit tokens into SimpleStake via adapter with 1% platform fee.
+     * @notice Deposit tokens into CakeStake via adapter with 1% platform fee.
      * @param amount Amount of tokens to deposit.
      * @param user User address to credit the deposit.
      */
@@ -46,28 +44,28 @@ contract SimpleStakeAdapter is ReentrancyGuard {
         uint256 fee = (amount * PLATFORM_FEE) / PLATFORM_FEE_BASE;
         uint256 stakeAmount = amount - fee;
         platformFeesCollected += fee;
-        stakeToken.approve(address(simpleStake), stakeAmount);
-        simpleStake.stake(user, stakeAmount); 
+        stakeToken.approve(address(cakeStake), stakeAmount);
+        cakeStake.stakeToEarn(user, stakeAmount); 
 
         emit Deposited(user, stakeAmount);
     }
 
     /**
-     * @notice Withdraw staked tokens from SimpleStake via adapter.
+     * @notice Withdraw staked tokens from CakeStake via adapter.
      * @param amount Amount of tokens to withdraw.
      * @param user User address to receive the tokens.
      */
     function withdraw(uint256 amount, address user) external nonReentrant onlyAggregator {
-        simpleStake.unstake(user, amount); 
+        cakeStake.quit(user, amount); 
         emit Withdrawn(user, amount);
     }
 
     /**
-     * @notice Claim rewards for a user (pass-through to SimpleStake).
+     * @notice Claim rewards for a user (pass-through to CakeStake).
      * @param user User address to send the rewards.
      */
     function claimRewards(address user) external nonReentrant onlyAggregator {
-        simpleStake.claimReward(user); 
+        cakeStake.claimReward(user); 
     }
 
     /**
@@ -75,13 +73,13 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @param user User address to send the assets.
      */
     function withdrawAll(address user) external nonReentrant onlyAggregator {
-        uint256 amount = simpleStake.stakedBalance(user); // 直接查詢 SimpleStake 的質押餘額
+        uint256 amount = cakeStake.stakedBalance(user); // 直接查詢 CakeStake 的質押餘額
         if (amount > 0) {
-            simpleStake.unstake(user, amount);
+            cakeStake.quit(user, amount);
             emit Withdrawn(user, amount);
         }
 
-        simpleStake.claimReward(user); 
+        cakeStake.claimReward(user); 
     }
 
     /**
@@ -97,7 +95,6 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @param to Recipient address.
      */
     function transferFees(address to) external nonReentrant onlyAggregator {
-        console.log("adapter platformFeesCollected:", platformFeesCollected);
         uint256 fees = platformFeesCollected;
         require(fees > 0, "Adapter: No fees to collect");
         platformFeesCollected = 0;
@@ -110,7 +107,7 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @return stakedBalance User's staked balance.
      */
     function getStakedBalance(address user) external view returns (uint256) {
-        return simpleStake.stakedBalance(user);
+        return cakeStake.stakedBalance(user);
     }
 
     /**
@@ -119,7 +116,7 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @return balance User's total balance.
      */
     function getCurrentBalance(address user) external view returns (uint256) {
-        return simpleStake.stakedBalance(user) + simpleStake.pendingReward(user);
+        return cakeStake.stakedBalance(user) + cakeStake.pendingReward(user);
     }
 
     /**
@@ -128,6 +125,6 @@ contract SimpleStakeAdapter is ReentrancyGuard {
      * @return rewards User's pending reward amount.
      */
     function getPendingRewards(address user) external view returns (uint256) {
-        return simpleStake.pendingReward(user);
+        return cakeStake.pendingReward(user);
     }
 }

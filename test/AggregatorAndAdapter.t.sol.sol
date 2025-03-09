@@ -4,9 +4,9 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";  
 import "../src/Aggregator.sol";
-import "../src/SimpleStakeAdapter.sol";
+import "../src/adapters/SimpleStakeAdapter.sol";
 import "../src/protocols/SimpleStake.sol";
-import "../src/ERC20.sol";
+import "../src/util/ERC20.sol";
 
 // 模擬的 WMOD 和 sWMOD 代幣
 contract MockWMOD is ERC20 {
@@ -159,7 +159,6 @@ contract AggregatorAdapterTest is Test {
     function testCollectPlatformFees() public {
         uint256 amount = 100e18;
         uint fee = amount * 1 / 100;
-        uint stakeAmount = amount - fee;
 
         // 投資，產生 1% 費用
         vm.prank(user1);

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "../src/protocols/SimpleStake.sol";
-import "../src/ERC20.sol";
+import "../src/util/ERC20.sol";
 import "forge-std/console.sol";  
 
 // 模擬的 WMOD 和 sWMOD 代幣
@@ -51,7 +51,7 @@ contract SimpleStakeTest is Test {
         swmod.mint(address(simpleStake), 100000e18);
     }
 
-    function testInitialState() public {
+    function testInitialState() public view {
         assertEq(simpleStake.owner(), owner);
         assertEq(address(simpleStake.stakingToken()), address(wmod));
         assertEq(address(simpleStake.rewardToken()), address(swmod));
