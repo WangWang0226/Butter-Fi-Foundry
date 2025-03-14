@@ -43,15 +43,10 @@ contract Deploy is Script {
     sWMOD public swmod;
     Aggregator public aggregator;
 
-    address anvilUser1 = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-    address anvilUser2 = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
-    address anvilUser3 = 0x90F79bf6EB2c4f870365E785982E1f101E93b906;
-    uint amount = 3000e18;
-
-    uint256 public constant SIMPLE_REWARD_RATE = 4e18; // 每秒 4 sWMOD 獎勵
-    uint256 public constant HAPPY_REWARD_RATE = 3e18; 
-    uint256 public constant EASY_REWARD_RATE = 2e18; 
-    uint256 public constant CAKE_REWARD_RATE = 1e18; 
+    uint256 public constant SIMPLE_REWARD_RATE = 0.01e18; // 每秒 0.01 sWMOD 獎勵
+    uint256 public constant HAPPY_REWARD_RATE = 0.008e18; 
+    uint256 public constant EASY_REWARD_RATE = 0.005e18; 
+    uint256 public constant CAKE_REWARD_RATE = 0.003e18; 
 
     uint256 public constant SIMPLE_STRATEGY_ID = 1;
     uint256 public constant HAPPY_STRATEGY_ID = 2;
@@ -77,14 +72,11 @@ contract Deploy is Script {
         easyStakeAdapter = new EasyStakeAdapter(address(easyStake), address(aggregator));
         cakeStakeAdapter = new CakeStakeAdapter(address(cakeStake), address(aggregator));
 
-             
-        // 為 user1 和 user2 充值 WMOD
-        wmod.mint(anvilUser1, 1000e18);
-        wmod.mint(anvilUser2, 1000e18);
-        wmod.mint(anvilUser3, 1000e18);
-
         // 為合約充值 sWMOD 作為獎勵
-        swmod.mint(address(simpleStake), 100000e18);
+        swmod.mint(address(simpleStake), 1000000e18);
+        swmod.mint(address(happyStake), 1000000e18);
+        swmod.mint(address(easyStake), 1000000e18);
+        swmod.mint(address(cakeStake), 1000000e18);
 
         // 明確通過 addStrategy 註冊 adapter
         aggregator.addStrategy(SIMPLE_STRATEGY_ID, address(simpleStakeAdapter));
@@ -92,7 +84,6 @@ contract Deploy is Script {
         aggregator.addStrategy(EASY_STRATEGY_ID, address(easyStakeAdapter));
         aggregator.addStrategy(CAKE_STRATEGY_ID, address(cakeStakeAdapter));
 
-        
         console.log("WMOD deployed at:", address(wmod));
         console.log("sWMOD deployed at:", address(swmod));
         console.log("Aggregator deployed at:", address(aggregator));
